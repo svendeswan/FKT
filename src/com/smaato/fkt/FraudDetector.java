@@ -4,10 +4,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.Random;
+import java.util.logging.Logger;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.rules.JRip;
+import weka.core.AttributeStats;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.SerializationHelper;
@@ -24,6 +26,8 @@ import weka.filters.unsupervised.attribute.Remove;
  */
 
 public class FraudDetector {
+	
+	private final static Logger LOGGER = Logger.getLogger(FraudDetector.class.getName()); 	
 	/**
 	 * The real classifier
 	 */
@@ -33,65 +37,7 @@ public class FraudDetector {
 	 * The data for build the model
 	 */
 	private Instances data4Model;
-
-	// /**
-	// * First only JRip
-	// */
-	// public FraudDetector(String aFraudDetectorType) {
-	// type = aFraudDetectorType;
-	// }
-
-	public static void main(String[] args) {
-		try {
-			FraudDetector detector = new FraudDetector();
-			System.out.println("FraudDetector successfully created!");
-
-			// 1. Test load from CSV Fiel to weka data 
-			String csvFile = "C:/STO/Data_20151126/1_final.csv";
-//			detector.loadCSV2WekaData(new File(csvFile));
-			
-			
-			
-			
-			
-			
-//			String trainCSVFile = "C:/STO/Data_20151126/2_final.csv";
-//			String testCSVFile = "C:/STO/Data_20151126/3_final.csv";
-			
-//			String trainCSVFile = "C:/STO/data_20150928/2.csv";
-//			String testCSVFile = "C:/STO/data_20150928/3.csv";
-			
-//			String trainARFFFile = "C:/STO/data_20150928/2_pruned.csv.arff";
-//			String testARFFFile = "C:/STO/data_20150928/3_pruned.csv.arff";
-
-//	    	detector.buildModel(modelCSVFile);
-//			String filter = "2,3,6,8,9,12,13,14,15,17";
-			String filter = "2-4,6,8-10,12-15,17";
-
-//			detector.buildModel(new File(modelCSVFile), filter);
-			
-			String modelPath = "C:/STO/Weka_Test_Result/jrip.model";
-//			detector.saveModel(modelPath);
-			
-			detector.loadModel(modelPath);
-			detector.printModel();
-			
-			String testCSVFile_Mini = "C:/STO/Data_20151126/test_example_new.csv";
-			
-			detector.detectFraud(new File(testCSVFile_Mini), filter);
-
-//			detector.evaluateCV(new File(modelCSVFile), 10, filter);
-
-//		    detector.evaluateCSVs(new File(trainCSVFile), new File(testCSVFile));
-
-//			detector.evaluateCSVs(new File(trainCSVFile), new File(testCSVFile), filter);
-//			detector.evaluateARFFs(new File(trainARFFFile), new File(testARFFFile));
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
+	
 
 	/**
 	 * Default is JRip Fraud Detector
@@ -137,13 +83,13 @@ public class FraudDetector {
 		} else {
 			newData2Classify = data2Classify;
 		}
-		System.out.println("\nDetecting the fraud from: \t" + aCSVFile.getAbsolutePath()+"\n");
+		LOGGER.info("\nDetecting the fraud from: \t" + aCSVFile.getAbsolutePath()+"\n");
 		for (int i=0; i<size; i++) {
 			Instance instance = newData2Classify.instance(i);
 			double predict = 1 - classifier.classifyInstance(instance);
 			double[] confidences = classifier.distributionForInstance(instance); 
 			result[i] = predict;
-			System.out.println("Instance:\t" + i + "\tprediction result is:\t" + predict 
+			LOGGER.info("Instance:\t" + i + "\tprediction result is:\t" + predict 
 					+ "\tConfidences Distribution:\t" + confidences[0] + " : " + confidences[1]);
 		}
 		
@@ -171,15 +117,15 @@ public class FraudDetector {
 		}
 		float fraudRate = new Float(Math.round(fraudCount*1000000/(nfCount+fraudCount))/100)/100;
 		
-		System.out.println("\nNon fraud counts: " + nfCount);
-		System.out.println("Fraud counts: " + fraudCount);
-		System.out.println("The fraud rate is: " + fraudRate +" %\n");
+		LOGGER.info("\nNon fraud counts: " + nfCount);
+		LOGGER.info("Fraud counts: " + fraudCount);
+		LOGGER.info("The fraud rate is: " + fraudRate +" %\n");
 		
 		
 		if ((fraudRate) < 3) {
-			System.out.println("\n=== WARNING WARNING WARNING ===");
-			System.out.println("=== The traning dataset has too low fraud rate of: " + fraudRate + " % ===");
-			System.out.println("=== We strongly suggest to use a traning set with a fraud rate of 3% at least for the model building!!! ===\n");
+			LOGGER.warning("\n=== WARNING WARNING WARNING ===");
+			LOGGER.warning("=== The traning dataset has too low fraud rate of: " + fraudRate + " % ===");
+			LOGGER.warning("=== We strongly suggest to use a traning set with a fraud rate of 3% at least for the model building!!! ===\n");
 		}
 		
 		
@@ -191,10 +137,10 @@ public class FraudDetector {
 			newData4Model = data4Model;
 		}
 		
-		System.out.println("\nBuilding model from:\t" + aCSVFile.getAbsolutePath());
+		LOGGER.info("\nBuilding model from:\t" + aCSVFile.getAbsolutePath());
 		classifier.buildClassifier(newData4Model);
-		System.out.println("The model is successfully built from:\t" + aCSVFile.getAbsolutePath()+"\n");
-		System.out.println("\n=== Classifier model (full training set) ===\n");
+		LOGGER.info("The model is successfully built from:\t" + aCSVFile.getAbsolutePath()+"\n");
+		LOGGER.info("\n=== Classifier model (full training set) ===\n");
 		printModel();
 	}
 
@@ -229,7 +175,7 @@ public class FraudDetector {
 	public void evaluateCV(int n_CrossValiation) throws Exception {
 		Evaluation eval = new Evaluation(data4Model);
 		eval.crossValidateModel(classifier, data4Model, n_CrossValiation, new Random(1));
-		System.out.println("\n=== Stratified cross-validation ===\n");		
+		LOGGER.info("\n=== Stratified cross-validation ===\n");		
 		printEvaluation(eval);
 	}
 	
@@ -269,7 +215,7 @@ public class FraudDetector {
 
 		Evaluation eval = new Evaluation(newData2Eval);
 		eval.crossValidateModel(cls, newData2Eval, n_CrossValiation, new Random(1));
-		System.out.println("\n=== Stratified cross-validation ===\n");
+		LOGGER.info("\n=== Stratified cross-validation ===\n");
 		printEvaluation(eval);
 	}
 
@@ -291,7 +237,7 @@ public class FraudDetector {
 		// evaluate classifier and print some statistics
 		Evaluation eval = new Evaluation(train);
 		eval.evaluateModel(cls, test);
-		System.out.println("\n=== Stratified cross-validation ===\n");
+		LOGGER.info("\n=== Stratified cross-validation ===\n");
 		printEvaluation(eval);
 	}
 	
@@ -322,7 +268,7 @@ public class FraudDetector {
 		// evaluate classifier and print some statistics
 		Evaluation eval = new Evaluation(newTrain);
 		eval.evaluateModel(cls, newTest);
-		System.out.println("\n=== Evaluation on test set ===\n");
+		LOGGER.info("\n=== Evaluation on test set ===\n");
 		printEvaluation(eval);
 	}
 
@@ -346,7 +292,7 @@ public class FraudDetector {
 		// evaluate classifier and print some statistics
 		Evaluation eval = new Evaluation(train);
 		eval.evaluateModel(cls, test);
-		System.out.println("\n=== Evaluation on test set ===\n");
+		LOGGER.info("\n=== Evaluation on test set ===\n");
 		printEvaluation(eval);
 
 	}
@@ -359,7 +305,7 @@ public class FraudDetector {
 	 */
 	public Instances loadCSV2WekaData(File aCSVFile) throws Exception {
 		
-		System.out.println("\nLoading CSV file from:\t" + aCSVFile + " to Weka data");
+		LOGGER.info("\nLoading CSV file from:\t" + aCSVFile + " to Weka data");
 
 
 		// load CSV
@@ -374,7 +320,7 @@ public class FraudDetector {
 		if (data.classIndex() == -1)
 			data.setClassIndex(0);
 		
-		System.out.println("The CSV file is successfully loaded from:\t" + aCSVFile+"\n");
+		LOGGER.info("The CSV file is successfully loaded from:\t" + aCSVFile+"\n");
 		return data;
 	}
 
@@ -386,7 +332,7 @@ public class FraudDetector {
 	 */
 	public Instances loadARFF2WekaData(File anARFFFile) throws Exception {
 		
-		System.out.println("\nLoading ARFF file from:\t" + anARFFFile + " to Weka data");
+		LOGGER.info("\nLoading ARFF file from:\t" + anARFFFile + " to Weka data");
 		BufferedReader reader = new BufferedReader(new FileReader(anARFFFile));
 		Instances data = new Instances(reader);
 		reader.close();
@@ -395,7 +341,7 @@ public class FraudDetector {
 		// information
 		if (data.classIndex() == -1)
 			data.setClassIndex(0);
-		System.out.println("The ARFF file is successfully loaded from:\t" + anARFFFile+"\n");
+		LOGGER.info("The ARFF file is successfully loaded from:\t" + anARFFFile+"\n");
 		return data;
 	}
 
@@ -427,9 +373,9 @@ public class FraudDetector {
 	 * @throws Exception
 	 */
 	private void printEvaluation(Evaluation anEval) throws Exception  {
-		System.out.println(anEval.toSummaryString("\n=== Results Summary ===\n", true));
-		System.out.println(anEval.toClassDetailsString("\n=== Detailed Accuracy By Class ===\n"));
-		System.out.println(anEval.toMatrixString("\n=== Confusion Matrix ===\n"));
+		LOGGER.info(anEval.toSummaryString("\n=== Results Summary ===\n", true));
+		LOGGER.info(anEval.toClassDetailsString("\n=== Detailed Accuracy By Class ===\n"));
+		LOGGER.info(anEval.toMatrixString("\n=== Confusion Matrix ===\n"));
 	}
 	
 	/**
@@ -438,9 +384,9 @@ public class FraudDetector {
 	 * @param aName
 	 */
 	public void printInstancesBasic(Instances data, String aName){
-		System.out.println("The basic information of the dataset:\t" + aName);
-		System.out.println("Instances:\t" + data.numInstances());
-		System.out.println("Attributes:\t" + data.numAttributes());
+		LOGGER.info("The basic information of the dataset:\t" + aName);
+		LOGGER.info("Instances:\t" + data.numInstances());
+		LOGGER.info("Attributes:\t" + data.numAttributes());
 	}
 	
 	/**
@@ -453,7 +399,7 @@ public class FraudDetector {
 	private Instances removeAttributes(Instances aData, String attributesFilter) throws Exception {
 		
 			
-		System.out.println("\nRemoving Attributes:\t" + attributesFilter+"\n");
+		LOGGER.info("\nRemoving Attributes:\t" + attributesFilter+"\n");
 		if (!attributesFilter.isEmpty()) {
 
 		String[] options = new String[2];
@@ -476,9 +422,9 @@ public class FraudDetector {
 	 * @throws Exception
 	 */
 	public void saveModel(String aModelPath) throws Exception {
-		System.out.println("\nSaving model to:\t" + aModelPath);		
+		LOGGER.info("\nSaving model to:\t" + aModelPath);		
 		SerializationHelper.write(aModelPath, classifier);
-		System.out.println("The model is successfully saved to:\t" + aModelPath+"\n");
+		LOGGER.info("The model is successfully saved to:\t" + aModelPath+"\n");
 	}
 	
 	
@@ -488,9 +434,9 @@ public class FraudDetector {
 	 * @throws Exception
 	 */
 	public void loadModel(String aModelPath) throws Exception {
-		System.out.println("\nLoading model from:\t" + aModelPath);
+		LOGGER.info("\nLoading model from:\t" + aModelPath);
 		classifier = (Classifier) SerializationHelper.read(aModelPath);
-		System.out.println("The model is successfully loaded from:\t" + aModelPath+"\n");
+		LOGGER.info("The model is successfully loaded from:\t" + aModelPath+"\n");
 	}
 	
 	
@@ -499,6 +445,6 @@ public class FraudDetector {
 	 */
 	public void printModel() {
 
-		System.out.println(classifier.toString());
+		LOGGER.info(classifier.toString());
 	}
 }

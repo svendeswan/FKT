@@ -1,19 +1,34 @@
 package com.smaato.fkt.test;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import com.smaato.fkt.FraudDetector;
-
 import weka.core.Instances;
+
+import com.smaato.fkt.FraudDetector;
 
 /**
  * @author sven
  *
  */
 public class FraudDetectorTest {
+
+	private final static Logger LOGGER = Logger.getLogger(FraudDetector.class.getName()); 	
 
 	FraudDetector detector;
 
@@ -24,6 +39,7 @@ public class FraudDetectorTest {
 	@Before
 	public void initialize() {
 		detector = new FraudDetector();
+		LOGGER.setLevel(Level.WARNING);
 	}
 
 	/**
@@ -33,7 +49,7 @@ public class FraudDetectorTest {
 	 */
 	@Test
 	public void testLoadCSV2WekaData() throws Exception {
-		System.out.println("\n=== 1. Test: load from CSV File to Weka data  ===\n");
+		LOGGER.info("\n=== 1. Test: load from CSV File to Weka data  ===\n");
 		File dir1 = new File (".");
 		File test = new File(dir1.getCanonicalPath() + "/test_data/");
 		String csvFile = test.toString() + "/data_20151126/1_final.csv";
@@ -48,7 +64,7 @@ public class FraudDetectorTest {
 	 */
 	@Test
 	public void testLoadARFF2WekaData() throws Exception {
-		System.out.println("\n=== 2. Test: load from ARFF File to Weka data ===\n");
+		LOGGER.info("\n=== 2. Test: load from ARFF File to Weka data ===\n");
 		File dir1 = new File (".");
 		File test = new File(dir1.getCanonicalPath() + "/test_data/");
 		String arffFile = test.toString() + "/data_20150928/2_pruned.csv.arff";
@@ -64,7 +80,7 @@ public class FraudDetectorTest {
 	 */
 	@Test
 	public void testBuildModel() throws Exception {
-		System.out.println("\n=== 3. Test: build model from CSV file ===\n");
+		LOGGER.info("\n=== 3. Test: build model from CSV file ===\n");
 		File dir1 = new File (".");
 		File test = new File(dir1.getCanonicalPath() + "/test_data/");
 		String modelCSVFile = test.toString() + "/data_20151126/1_final.csv";
@@ -75,15 +91,34 @@ public class FraudDetectorTest {
 		// detector.buildModel(new File(modelCSVFile));
 
 	}
+	
+	/**
+	 * 4 Test: build model from CSV file
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testBuildModelBadRatio() throws Exception {
+		LOGGER.info("\n=== 4. Test: build model with bad ratio from CSV file ===\n");
+		File dir1 = new File (".");
+		File test = new File(dir1.getCanonicalPath() + "/test_data/");
+		String modelCSVFile = test.toString() + "/data_20151126/8_bad_ratio.csv";
+
+		detector.buildModel(modelCSVFile);
+
+		// Or build model from a File
+		// detector.buildModel(new File(modelCSVFile));
+
+	}
 
 	/**
-	 * 4 Test: build model from CSV file with attributes pruning
+	 * 5 Test: build model from CSV file with attributes pruning
 	 * 
 	 * @throws Exception
 	 */
 	@Test
 	public void testBuildModelWithPruning() throws Exception {
-		System.out.println("\n=== 4. Test: build model from CSV file with attributes pruning ===\n");
+		LOGGER.info("\n=== 5. Test: build model from CSV file with attributes pruning ===\n");
 		File dir1 = new File (".");
 		File test = new File(dir1.getCanonicalPath() + "/test_data/");
 		String modelCSVFile = test.toString() + "/data_20151126/1_final.csv";
@@ -98,13 +133,13 @@ public class FraudDetectorTest {
 	}
 
 	/**
-	 * 5 Test: save model
+	 * 6 Test: save model
 	 * 
 	 * @throws Exception
 	 */
 	@Test
 	public void testSaveModel() throws Exception {
-		System.out.println("\n=== 5. Test: save model ===\n");
+		LOGGER.info("\n=== 6. Test: save model ===\n");
 		File dir1 = new File (".");
 		File test = new File(dir1.getCanonicalPath() + "/test_data/");
 		String modelCSVFile = test.toString() + "/data_20151126/1_final.csv";
@@ -119,13 +154,13 @@ public class FraudDetectorTest {
 	}
 
 	/**
-	 * 6 Test: load model
+	 * 7 Test: load model
 	 * 
 	 * @throws Exception
 	 */
 	@Test
 	public void testLoadModel() throws Exception {
-		System.out.println("\n=== 6. Test: load model ===\n");
+		LOGGER.info("\n=== 7. Test: load model ===\n");
 		File dir1 = new File (".");
 		File test = new File(dir1.getCanonicalPath() + "/test_data/");
 
@@ -136,13 +171,13 @@ public class FraudDetectorTest {
 	}
 
 	/**
-	 * 7 Test: evaluation with n-Cross Validation
+	 * 8 Test: evaluation with n-Cross Validation
 	 * 
 	 * @throws Exception
 	 */
 	@Test
 	public void testEvaluationCV() throws Exception {
-		System.out.println("\n=== 7. Test: evaluation with n-Cross Validation ===\n");
+		LOGGER.info("\n=== 8. Test: evaluation with n-Cross Validation ===\n");
 		File dir1 = new File (".");
 		File test = new File(dir1.getCanonicalPath() + "/test_data/");
 
@@ -154,13 +189,13 @@ public class FraudDetectorTest {
 	}
 
 	/**
-	 * 8 Test: evaluation with n-Cross Validation
+	 * 9 Test: evaluation with n-Cross Validation
 	 * 
 	 * @throws Exception
 	 */
 	@Test
 	public void testEvaluationTrainTest() throws Exception {
-		System.out.println("\n=== 8. Test: evaluation with train and test dataset ===\n");
+		LOGGER.info("\n=== 9. Test: evaluation with train and test dataset ===\n");
 		File dir1 = new File (".");
 		File test = new File(dir1.getCanonicalPath() + "/test_data/");
 
@@ -174,13 +209,13 @@ public class FraudDetectorTest {
 	}
 
 	/**
-	 * 9 Test: detect fraud from CSV file
+	 * 10 Test: detect fraud from CSV file
 	 * 
 	 * @throws Exception
 	 */
 	@Test
 	public void testDetectFraud() throws Exception {
-		System.out.println("\n=== 9. Test: detect fraud from CSV file ===\n");
+		LOGGER.info("\n=== 10. Test: detect fraud from CSV file ===\n");
 		File dir1 = new File (".");
 		File test = new File(dir1.getCanonicalPath() + "/test_data/");
 
@@ -204,7 +239,7 @@ public class FraudDetectorTest {
 	 */
 	@Test
 	public void testDetectFraudWorkflow() throws Exception {
-		System.out.println("\n=== 10. Test: complete worklfow ===\n");
+		LOGGER.info("\n=== 10. Test: complete worklfow ===\n");
 
 		
 		File dir1 = new File (".");
