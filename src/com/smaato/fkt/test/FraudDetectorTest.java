@@ -239,7 +239,7 @@ public class FraudDetectorTest {
 	 */
 	@Test
 	public void testDetectFraudWorkflow() throws Exception {
-		LOGGER.info("\n=== 10. Test: complete worklfow ===\n");
+		LOGGER.info("\n=== 11. Test: complete worklfow ===\n");
 
 		
 		File dir1 = new File (".");
