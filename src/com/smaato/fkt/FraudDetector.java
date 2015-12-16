@@ -445,6 +445,6 @@ public class FraudDetector {
 	 */
 	public void printModel() {
 
-		LOGGER.info(classifier.toString());
+		System.out.println(classifier.toString());
 	}
 }
